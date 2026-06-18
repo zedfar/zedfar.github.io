@@ -4,10 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Zedfar — Software Engineer focused on web, mobile, data visualization, prototyping, and maintainable systems." />
-  <title>Zedfar · Software Engineer</title>
+  <title>Zedfar · Neural Schematic</title>
+  
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  
   <style>
     *, *::before, *::after {
       box-sizing: border-box;
@@ -16,921 +18,632 @@
     }
 
     :root {
-      --primary: #4f46e5;
-      --primary-2: #7c3aed;
-      --accent: #0ea5e9;
-      --bg: #f8fafc;
-      --bg-soft: #eef2ff;
-      --card: rgba(255, 255, 255, 0.82);
-      --card-solid: #ffffff;
-      --text: #0f172a;
-      --muted: #64748b;
-      --border: rgba(148, 163, 184, 0.28);
-      --shadow: 0 20px 70px rgba(15, 23, 42, 0.08);
-      --radius: 24px;
+      /* Dark Schematic Palette */
+      --bg: #050508;
+      --bg-grid: rgba(255, 255, 255, 0.03);
+      --node-bg: rgba(12, 12, 16, 0.6);
+      --node-border: rgba(255, 255, 255, 0.12);
+      --text-main: #f8fafc;
+      --text-muted: #8b949e;
+      --wire-cyan: #00e5ff;
+      --wire-purple: #b400ff;
+      --wire-pink: #ff0055;
+      --glow-spread: 15px;
     }
 
-    html { scroll-behavior: smooth; }
+    html {
+      scroll-behavior: smooth;
+    }
 
     body {
-      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background:
-        radial-gradient(circle at 20% 0%, rgba(124, 58, 237, 0.10), transparent 34rem),
-        radial-gradient(circle at 85% 10%, rgba(14, 165, 233, 0.12), transparent 32rem),
-        var(--bg);
-      color: var(--text);
-      line-height: 1.65;
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
       overflow-x: hidden;
+      /* Blueprint Grid Background */
+      background-image: 
+        linear-gradient(var(--bg-grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
+      background-size: 40px 40px;
+      background-position: center center;
     }
 
-    a { color: inherit; }
-
-    /* Navigation */
-    nav {
+    #schematic-canvas {
       position: fixed;
-      inset: 0 0 auto 0;
-      z-index: 100;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none; /* Let clicks pass through to HTML */
+    }
+
+    /* Container for the Nodes */
+    .layout-container {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12vh;
+      padding: 12vh 4vw 15vh;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .row {
+      display: flex;
+      width: 100%;
+      justify-content: center;
+      gap: 5vw;
+    }
+
+    .row.split {
+      justify-content: space-between;
+      max-width: 1100px;
+    }
+
+    .node {
+      background: var(--node-bg);
+      border: 1px solid var(--node-border);
+      border-radius: 12px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+      transition: border-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .node:hover {
+      border-color: rgba(255, 255, 255, 0.25);
+      transform: translateY(-2px);
+    }
+
+    .node.large {
+      max-width: 800px;
+    }
+
+    .node-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1rem clamp(1.25rem, 4vw, 3rem);
-      background: rgba(248, 250, 252, 0.76);
-      border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(18px);
-    }
-
-    .nav-logo {
+      padding: 0.6rem 1.2rem;
+      background: rgba(0, 0, 0, 0.5);
+      border-bottom: 1px solid var(--node-border);
+      border-radius: 12px 12px 0 0;
       font-family: 'Fira Code', monospace;
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--primary);
-      text-decoration: none;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      user-select: none;
     }
 
-    .nav-links {
+    .node-header .dots {
       display: flex;
-      gap: 1.65rem;
-      list-style: none;
+      gap: 6px;
     }
 
-    .nav-links a {
-      text-decoration: none;
-      color: var(--muted);
-      font-size: 0.88rem;
-      font-weight: 600;
-      transition: color 0.2s ease;
+    .node-header .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #333;
     }
 
-    .nav-links a:hover { color: var(--primary); }
+    .dot.red { background: #ff5f56; }
+    .dot.yellow { background: #ffbd2e; }
+    .dot.green { background: #27c93f; }
 
-    /* Hero */
-    #hero {
-      min-height: 100svh;
-      position: relative;
-      display: grid;
-      place-items: center;
-      overflow: hidden;
-      padding: 6rem 1.25rem 3rem;
+    .node-body {
+      padding: 1.8rem;
     }
 
-    #network-canvas {
+    .port {
+      width: 14px;
+      height: 14px;
+      background: #111;
+      border: 2px solid #555;
+      border-radius: 50%;
       position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0.86;
+      z-index: 20;
+      transition: all 0.3s ease;
     }
 
-    .hero-glass {
-      position: relative;
-      z-index: 1;
-      width: min(930px, 100%);
-      padding: clamp(2rem, 6vw, 4.5rem);
-      text-align: center;
-      background: linear-gradient(135deg, rgba(255,255,255,0.76), rgba(255,255,255,0.46));
-      border: 1px solid rgba(255,255,255,0.85);
-      border-radius: 36px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
+    .port-in { top: -7px; left: 50%; transform: translateX(-50%); }
+    .port-out { bottom: -7px; left: 50%; transform: translateX(-50%); }
+    
+    /* Specific positioning for multiple ports */
+    .port-in.left-port { left: 25%; }
+    .port-in.right-port { left: 75%; }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 8px var(--glow-color); }
+      50% { box-shadow: 0 0 18px var(--glow-color); }
     }
 
-    .hero-eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.55rem;
+    .port-glow-cyan { --glow-color: rgba(0, 229, 255, 0.6); border-color: var(--wire-cyan); animation: pulseGlow 2.5s infinite; }
+    .port-glow-purple { --glow-color: rgba(180, 0, 255, 0.6); border-color: var(--wire-purple); animation: pulseGlow 2.5s infinite 0.5s; }
+    .port-glow-pink { --glow-color: rgba(255, 0, 85, 0.6); border-color: var(--wire-pink); animation: pulseGlow 2.5s infinite 1s; }
+
+    h1, h2, h3, .mono {
       font-family: 'Fira Code', monospace;
-      font-size: 0.83rem;
-      font-weight: 500;
-      color: var(--primary);
-      background: rgba(79, 70, 229, 0.08);
-      border: 1px solid rgba(79, 70, 229, 0.13);
-      padding: 0.45rem 0.85rem;
-      border-radius: 999px;
-      opacity: 0;
-      animation: fadeUp 0.8s forwards 0.12s;
     }
 
-    .hero-name {
-      margin-top: 1.25rem;
-      font-size: clamp(3.2rem, 10vw, 7.2rem);
-      font-weight: 900;
-      line-height: 0.92;
-      letter-spacing: -0.065em;
-      background: linear-gradient(135deg, #0f172a 0%, #4f46e5 48%, #0ea5e9 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      opacity: 0;
-      animation: fadeUp 0.8s forwards 0.26s;
-    }
-
-    .hero-title {
-      margin: 1.35rem auto 0;
-      max-width: 720px;
-      color: var(--muted);
-      font-size: clamp(1rem, 2.6vw, 1.24rem);
-      opacity: 0;
-      animation: fadeUp 0.8s forwards 0.4s;
-    }
-
-    .hero-title strong {
-      color: var(--text);
+    .node-title {
+      font-size: 2.2rem;
       font-weight: 700;
-    }
-
-    .hero-summary {
-      max-width: 660px;
-      margin: 1.1rem auto 0;
-      color: var(--muted);
-      font-size: 0.98rem;
-      opacity: 0;
-      animation: fadeUp 0.8s forwards 0.54s;
-    }
-
-    .hero-cta {
-      display: flex;
-      justify-content: center;
-      gap: 0.9rem;
-      flex-wrap: wrap;
-      margin-top: 2.2rem;
-      opacity: 0;
-      animation: fadeUp 0.8s forwards 0.68s;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      padding: 0.84rem 1.45rem;
-      border-radius: 999px;
-      font-size: 0.93rem;
-      font-weight: 700;
-      text-decoration: none;
-      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--primary), var(--primary-2));
       color: #fff;
-      box-shadow: 0 12px 32px rgba(79, 70, 229, 0.28);
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
     }
 
-    .btn-ghost {
-      background: rgba(255,255,255,0.54);
-      border: 1px solid var(--border);
-      color: var(--text);
+    .node-subtitle {
+      color: var(--wire-cyan);
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin-bottom: 1.2rem;
     }
 
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 18px 38px rgba(79, 70, 229, 0.18);
+    .node-text {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
     }
 
-    .mini-stack {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 0.55rem;
-      margin-top: 2rem;
-      opacity: 0;
-      animation: fadeUp 0.8s forwards 0.82s;
-    }
-
-    .mini-stack span {
-      padding: 0.38rem 0.8rem;
-      background: rgba(15, 23, 42, 0.04);
-      border: 1px solid rgba(15, 23, 42, 0.07);
-      color: #334155;
-      border-radius: 999px;
-      font-size: 0.82rem;
-      font-weight: 600;
-    }
-
-    .scroll-hint {
-      position: absolute;
-      z-index: 1;
-      bottom: 1.8rem;
-      left: 50%;
-      transform: translateX(-50%);
-      color: var(--muted);
-      font-family: 'Fira Code', monospace;
-      font-size: 0.72rem;
-      opacity: 0;
-      animation: fadeUp 0.8s forwards 1s;
-    }
-
-    /* Shared sections */
-    section, #stack .inner {
-      width: min(1120px, calc(100% - 2.5rem));
-      margin: 0 auto;
-    }
-
-    section { padding: 6rem 0; }
-
-    .section-label {
-      font-family: 'Fira Code', monospace;
-      font-size: 0.76rem;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      color: var(--primary);
-      font-weight: 600;
-      margin-bottom: 0.7rem;
-    }
-
-    .section-title {
-      font-size: clamp(2rem, 4vw, 3rem);
-      font-weight: 850;
-      line-height: 1.12;
-      letter-spacing: -0.04em;
+    .node-text p {
       margin-bottom: 1rem;
     }
 
-    .section-desc {
-      color: var(--muted);
-      max-width: 680px;
-      font-size: 1.02rem;
+    .node-text strong {
+      color: var(--text-main);
+      font-weight: 500;
     }
 
-    /* About */
-    .about-grid {
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: clamp(2rem, 6vw, 4.5rem);
-      align-items: start;
-      margin-top: 3.2rem;
+    /* Tech Stack Pills */
+    .tech-category {
+      margin-bottom: 1.5rem;
+    }
+    
+    .tech-category:last-child {
+      margin-bottom: 0;
     }
 
-    .about-text {
-      color: var(--muted);
-      font-size: 1rem;
-    }
-
-    .about-text p { margin-bottom: 1.05rem; }
-    .about-text strong { color: var(--text); }
-
-    .about-note {
-      margin-top: 1.6rem;
-      padding: 1.1rem 1.25rem;
-      background: rgba(79, 70, 229, 0.07);
-      border: 1px solid rgba(79, 70, 229, 0.12);
-      border-left: 4px solid var(--primary);
-      border-radius: 0 18px 18px 0;
-      color: #4338ca;
-      font-weight: 600;
-    }
-
-    .focus-grid {
-      display: grid;
-      gap: 1rem;
-    }
-
-    .focus-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.25rem;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(12px);
-    }
-
-    .focus-card small {
-      display: block;
-      color: var(--primary);
+    .tech-label {
       font-family: 'Fira Code', monospace;
-      font-size: 0.74rem;
-      font-weight: 600;
-      margin-bottom: 0.45rem;
-    }
-
-    .focus-card h3 {
-      font-size: 1rem;
-      margin-bottom: 0.3rem;
-    }
-
-    .focus-card p {
-      color: var(--muted);
-      font-size: 0.9rem;
-    }
-
-    /* Stack */
-    #stack {
-      padding: 6rem 0;
-      background: linear-gradient(180deg, rgba(238,242,255,0.72), rgba(248,250,252,0.6));
-      border-block: 1px solid var(--border);
-    }
-
-    .stack-grid {
-      display: grid;
-      gap: 1rem;
-      margin-top: 3rem;
-    }
-
-    .stack-row {
-      display: grid;
-      grid-template-columns: 160px 1fr;
-      gap: 1.25rem;
-      align-items: start;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.35rem;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(12px);
-    }
-
-    .row-label {
-      color: #475569;
-      font-size: 0.78rem;
-      font-weight: 800;
-      letter-spacing: 0.08em;
+      font-size: 0.75rem;
+      color: var(--wire-purple);
       text-transform: uppercase;
-      padding-top: 0.34rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.6rem;
+      display: block;
     }
 
-    .tech-pills {
+    .pill-container {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.55rem;
+      gap: 0.5rem;
     }
 
-    .tech-pill {
-      padding: 0.38rem 0.82rem;
-      border-radius: 999px;
-      font-size: 0.83rem;
-      font-weight: 700;
-      background: rgba(79, 70, 229, 0.07);
-      color: #4338ca;
-      border: 1px solid rgba(79, 70, 229, 0.09);
-      transition: transform 0.18s ease, background 0.18s ease;
+    .pill {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-family: 'Fira Code', monospace;
+      color: #cbd5e1;
+      transition: all 0.2s ease;
     }
 
-    .tech-pill:hover {
-      transform: translateY(-2px);
-      background: rgba(79, 70, 229, 0.11);
+    .pill:hover {
+      background: rgba(180, 0, 255, 0.15);
+      border-color: var(--wire-purple);
+      color: #fff;
     }
 
-    /* Build cards */
+    /* Builds Grid */
     .builds-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 1.25rem;
-      margin-top: 3rem;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
     }
 
     .build-card {
-      position: relative;
-      overflow: hidden;
-      min-height: 210px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.55rem;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(12px);
-      transition: transform 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 1rem;
+      border-radius: 8px;
     }
 
-    .build-card::before {
-      content: '';
-      position: absolute;
-      inset: 0 auto 0 0;
-      width: 4px;
-      background: linear-gradient(180deg, var(--primary), var(--accent));
-      opacity: 0.72;
-    }
-
-    .build-card:hover {
-      transform: translateY(-5px);
-      border-color: rgba(79, 70, 229, 0.22);
-      box-shadow: 0 24px 70px rgba(15, 23, 42, 0.11);
-    }
-
-    .build-icon {
-      display: inline-flex;
-      font-size: 2rem;
-      margin-bottom: 0.9rem;
-    }
-
-    .build-title {
-      font-size: 1.02rem;
-      font-weight: 800;
-      margin-bottom: 0.45rem;
-    }
-
-    .build-desc {
-      color: var(--muted);
+    .build-card h4 {
+      color: #fff;
       font-size: 0.9rem;
+      margin-bottom: 0.4rem;
     }
 
-    .exploring-box {
-      margin-top: 2.2rem;
-      padding: clamp(1.7rem, 5vw, 2.7rem);
-      background:
-        linear-gradient(135deg, rgba(15,23,42,0.92), rgba(49,46,129,0.92)),
-        radial-gradient(circle at 15% 20%, rgba(14,165,233,0.22), transparent 26rem);
-      color: white;
-      border-radius: 30px;
-      box-shadow: 0 22px 70px rgba(15, 23, 42, 0.22);
-      position: relative;
-      overflow: hidden;
+    .build-card p {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      line-height: 1.5;
     }
 
-    .exploring-box h3 {
-      font-size: 1.3rem;
-      margin-bottom: 0.45rem;
-    }
-
-    .exploring-box p {
-      color: rgba(255,255,255,0.72);
-      max-width: 650px;
-      margin-bottom: 1.5rem;
-    }
-
-    .explore-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.7rem;
-    }
-
-    .explore-pill {
-      padding: 0.52rem 1rem;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.16);
-      color: rgba(255,255,255,0.9);
-      font-size: 0.85rem;
-      font-weight: 700;
-      backdrop-filter: blur(8px);
-    }
-
-    /* Contact */
-    .contact-card {
-      text-align: center;
-      max-width: 720px;
-      margin: 0 auto;
-      padding: clamp(2rem, 5vw, 3.2rem);
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 34px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(14px);
-    }
-
-    .contact-links {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 0.8rem;
-      margin-top: 2rem;
-    }
-
-    .contact-link {
+    /* Contact Links */
+    .btn-contact {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      text-decoration: none;
-      padding: 0.78rem 1.25rem;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.55);
-      color: var(--text);
-      font-size: 0.9rem;
-      font-weight: 800;
-      transition: transform 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-    }
-
-    .contact-link:hover {
-      transform: translateY(-2px);
-      color: var(--primary);
-      border-color: rgba(79, 70, 229, 0.22);
-    }
-
-    .contact-link svg { width: 18px; height: 18px; }
-
-    footer {
-      padding: 2.1rem 1.25rem;
-      text-align: center;
-      color: var(--muted);
-      border-top: 1px solid var(--border);
+      gap: 0.6rem;
+      background: transparent;
+      border: 1px solid var(--wire-pink);
+      color: var(--text-main);
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
       font-family: 'Fira Code', monospace;
-      font-size: 0.78rem;
+      font-size: 0.85rem;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
     }
 
-    /* Animation */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(24px); }
-      to { opacity: 1; transform: translateY(0); }
+    .btn-contact:hover {
+      background: rgba(255, 0, 85, 0.1);
+      box-shadow: 0 0 20px rgba(255, 0, 85, 0.3);
     }
 
-    .reveal {
-      opacity: 0;
-      transform: translateY(28px);
-      transition: opacity 0.7s ease, transform 0.7s ease;
-    }
-
-    .reveal.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    @media (max-width: 860px) {
-      .nav-links { display: none; }
-      .about-grid { grid-template-columns: 1fr; }
-      .stack-row { grid-template-columns: 1fr; }
-      .builds-grid { grid-template-columns: 1fr; }
-      section { padding: 4.5rem 0; }
-      #stack { padding: 4.5rem 0; }
-      .hero-glass { border-radius: 28px; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
-      *, *::before, *::after {
-        animation-duration: 0.001ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.001ms !important;
+    /* Responsiveness */
+    @media (max-width: 900px) {
+      .row.split {
+        flex-direction: column;
+        align-items: center;
+        gap: 10vh;
       }
+      .node { max-width: 100%; }
+      /* Adjust dual ports on mobile to be central if they stack */
+      .port-in.left-port, .port-in.right-port { left: 50%; }
+      .port-in.left-port { top: -7px; }
+      .port-in.right-port { top: -7px; } 
     }
   </style>
 </head>
 <body>
-  <nav>
-    <a href="#hero" class="nav-logo">zedfar.dev</a>
-    <ul class="nav-links">
-      <li><a href="#about">About</a></li>
-      <li><a href="#stack">Stack</a></li>
-      <li><a href="#builds">Builds</a></li>
-      <li><a href="#contact">Contact</a></li>
-    </ul>
-  </nav>
 
-  <main>
-    <section id="hero" aria-label="Intro">
-      <canvas id="network-canvas" aria-hidden="true"></canvas>
-      <div class="hero-glass">
-        <p class="hero-eyebrow">// hello, world 👋</p>
-        <h1 class="hero-name">Zedfar</h1>
-        <p class="hero-title">
-          <strong>Software Engineer</strong> · Web &amp; Mobile Development · Data Visualization
-        </p>
-        <p class="hero-summary">
-          I build practical web, mobile, dashboard, and internal tool solutions, with a focus on prototyping, maintainability, and turning ideas into working software.
-        </p>
-        <div class="hero-cta">
-          <a href="#builds" class="btn btn-primary">See What I Build</a>
-          <a href="#contact" class="btn btn-ghost">Get in Touch</a>
+  <!-- Background Canvas for Neural Wires -->
+  <canvas id="schematic-canvas"></canvas>
+
+  <main class="layout-container">
+    
+    <div class="row single">
+      <div class="node" id="node-hero">
+        <div class="node-header">
+          <div class="dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+          <span>sys.init_profile()</span>
         </div>
-        <div class="mini-stack" aria-label="Main technologies">
-          <span>React</span>
-          <span>React Native</span>
-          <span>TypeScript</span>
-          <span>Node.js</span>
-          <span>Python</span>
-          <span>Data Viz</span>
+        <div class="node-body">
+          <h1 class="node-title">Zedfar</h1>
+          <h2 class="node-subtitle">&lt;Software Engineer /&gt;</h2>
+          <div class="node-text">
+            <p>I build practical web, mobile, dashboard, and internal tool solutions, focusing on prototyping, maintainability, and turning ideas into working software.</p>
+          </div>
         </div>
+        <!-- Output Port branching to About and Stack -->
+        <div id="port-hero-out" class="port port-out port-glow-cyan"></div>
       </div>
-      <div class="scroll-hint">scroll ↓</div>
-    </section>
+    </div>
 
-    <section id="about">
-      <p class="section-label reveal">about me</p>
-      <h2 class="section-title reveal">Building useful software,<br />from prototype to maintenance.</h2>
-      <div class="about-grid">
-        <div class="about-text reveal">
-          <p>
-            I'm a <strong>Software Engineer</strong> focused on building web and mobile applications, creating prototypes, and maintaining reliable systems.
-          </p>
-          <p>
-            I work across <strong>frontend, backend, mobile, and data visualization</strong>, using technologies such as React, Angular, React Native, Node.js, Hono, Python, TypeScript, JavaScript, SQL, MongoDB, and Docker.
-          </p>
-          <p>
-            I enjoy turning ideas into working products, exploring technical solutions through R&amp;D, and improving applications so they are easier to use, maintain, and scale.
-          </p>
-          <p>
-            I also use <strong>AI-assisted tools</strong> as part of my workflow for research, coding, debugging, and documentation, while keeping software engineering, problem solving, and product quality as the main focus.
-          </p>
-          <div class="about-note">Open to learning, collaboration, and interesting software projects.</div>
+    <div class="row split">
+      <!-- ABOUT NODE -->
+      <div class="node" id="node-about">
+        <div id="port-about-in" class="port port-in port-glow-cyan"></div>
+        <div class="node-header">
+          <div class="dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+          <span>module.logic_core</span>
         </div>
-
-        <div class="focus-grid reveal" aria-label="Focus areas">
-          <div class="focus-card">
-            <small>01 / Engineering</small>
-            <h3>Web &amp; mobile apps</h3>
-            <p>Frontend, backend, mobile screens, APIs, and practical application features.</p>
-          </div>
-          <div class="focus-card">
-            <small>02 / Visualization</small>
-            <h3>Dashboards &amp; data visuals</h3>
-            <p>Charts, reports, SVG visuals, and interfaces that make data easier to understand.</p>
-          </div>
-          <div class="focus-card">
-            <small>03 / Workflow</small>
-            <h3>R&amp;D, prototyping &amp; maintenance</h3>
-            <p>Experimenting with ideas, debugging, refactoring, and improving existing systems.</p>
+        <div class="node-body">
+          <h3 class="mono" style="color: #fff; margin-bottom: 1rem; font-size: 1.1rem;">// About Architecture</h3>
+          <div class="node-text">
+            <p>Working across <strong>frontend, backend, mobile, and data visualization</strong> to create seamless digital experiences.</p>
+            <p>I enjoy transforming complex problems into intuitive products, exploring technical solutions through R&D, and refining applications for scale.</p>
+            <p style="padding-left: 10px; border-left: 2px solid var(--wire-cyan); margin-top: 1.5rem; font-size: 0.85rem;">
+              Currently integrating <strong>AI-assisted workflows</strong> to push the boundaries of rapid prototyping and robust system documentation.
+            </p>
           </div>
         </div>
+        <div id="port-about-out" class="port port-out port-glow-cyan"></div>
       </div>
-    </section>
 
-    <div id="stack">
-      <div class="inner">
-        <p class="section-label reveal">tech stack</p>
-        <h2 class="section-title reveal">Tools I work with</h2>
-        <p class="section-desc reveal">A focused overview of the technologies I use for web, mobile, backend, data visualization, and prototyping work.</p>
-
-        <div class="stack-grid">
-          <div class="stack-row reveal">
-            <span class="row-label">Frontend</span>
-            <div class="tech-pills">
-              <span class="tech-pill">React</span>
-              <span class="tech-pill">Angular</span>
-              <span class="tech-pill">TypeScript</span>
-              <span class="tech-pill">JavaScript</span>
-              <span class="tech-pill">HTML</span>
-              <span class="tech-pill">CSS</span>
-              <span class="tech-pill">Vite</span>
+      <!-- STACK NODE -->
+      <div class="node" id="node-stack">
+        <div id="port-stack-in" class="port port-in port-glow-purple"></div>
+        <div class="node-header">
+          <div class="dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+          <span>data.tech_stack</span>
+        </div>
+        <div class="node-body">
+          <div class="tech-category">
+            <span class="tech-label">Frontend & Mobile</span>
+            <div class="pill-container">
+              <span class="pill">React</span><span class="pill">Angular</span>
+              <span class="pill">React Native</span><span class="pill">TypeScript</span>
             </div>
           </div>
-
-          <div class="stack-row reveal">
-            <span class="row-label">Backend</span>
-            <div class="tech-pills">
-              <span class="tech-pill">Node.js</span>
-              <span class="tech-pill">Hono</span>
-              <span class="tech-pill">Python</span>
-              <span class="tech-pill">REST APIs</span>
-              <span class="tech-pill">API Integration</span>
+          <div class="tech-category">
+            <span class="tech-label">Backend & Infra</span>
+            <div class="pill-container">
+              <span class="pill">Node.js</span><span class="pill">Python</span>
+              <span class="pill">Hono</span><span class="pill">SQL/NoSQL</span>
+              <span class="pill">Docker</span>
             </div>
           </div>
-
-          <div class="stack-row reveal">
-            <span class="row-label">Mobile</span>
-            <div class="tech-pills">
-              <span class="tech-pill">React Native</span>
-              <span class="tech-pill">Expo</span>
+          <div class="tech-category">
+            <span class="tech-label">Visualization & AI</span>
+            <div class="pill-container">
+              <span class="pill">D3.js</span><span class="pill">ECharts</span>
+              <span class="pill">LLM APIs</span><span class="pill">Agentic Workflows</span>
             </div>
           </div>
+        </div>
+        <div id="port-stack-out" class="port port-out port-glow-purple"></div>
+      </div>
+    </div>
 
-          <div class="stack-row reveal">
-            <span class="row-label">Data &amp; Infra</span>
-            <div class="tech-pills">
-              <span class="tech-pill">SQL</span>
-              <span class="tech-pill">MongoDB</span>
-              <span class="tech-pill">Docker</span>
-              <span class="tech-pill">Git</span>
-              <span class="tech-pill">GitHub</span>
+    <div class="row single">
+      <div class="node large" id="node-builds">
+        <!-- Dual input ports to receive from About and Stack -->
+        <div id="port-builds-in-1" class="port port-in left-port port-glow-cyan"></div>
+        <div id="port-builds-in-2" class="port port-in right-port port-glow-purple"></div>
+        
+        <div class="node-header">
+          <div class="dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+          <span>render.outputs()</span>
+        </div>
+        <div class="node-body">
+          <h3 class="mono" style="color: #fff; margin-bottom: 1.5rem; font-size: 1.1rem;">// Executable Modules</h3>
+          <div class="builds-grid">
+            <div class="build-card">
+              <h4>🌐 Web Applications</h4>
+              <p>Performant SPAs, interactive dashboards, and comprehensive internal management tools.</p>
+            </div>
+            <div class="build-card">
+              <h4>📱 Mobile Experiences</h4>
+              <p>Seamless cross-platform interfaces using React Native and Expo.</p>
+            </div>
+            <div class="build-card">
+              <h4>📊 Data Visualization</h4>
+              <p>Custom charts, reports, and network graphs that turn raw data into insights.</p>
+            </div>
+            <div class="build-card">
+              <h4>🤖 AI Prototyping</h4>
+              <p>Integrating LLMs for smart search, automated workflows, and research analysis.</p>
             </div>
           </div>
+        </div>
+        <div id="port-builds-out" class="port port-out port-glow-pink"></div>
+      </div>
+    </div>
 
-          <div class="stack-row reveal">
-            <span class="row-label">Data Viz</span>
-            <div class="tech-pills">
-              <span class="tech-pill">D3.js</span>
-              <span class="tech-pill">ECharts</span>
-              <span class="tech-pill">Recharts</span>
-              <span class="tech-pill">Chart.js</span>
-              <span class="tech-pill">SVG</span>
-              <span class="tech-pill">Network Graphs</span>
-            </div>
-          </div>
-
-          <div class="stack-row reveal">
-            <span class="row-label">AI Workflow</span>
-            <div class="tech-pills">
-              <span class="tech-pill">AI-assisted Development</span>
-              <span class="tech-pill">LLM API Integration</span>
-              <span class="tech-pill">OpenAI API</span>
-              <span class="tech-pill">Anthropic API</span>
-              <span class="tech-pill">Prototyping</span>
-            </div>
-          </div>
+    <div class="row single">
+      <div class="node" id="node-contact" style="text-align: center;">
+        <div id="port-contact-in" class="port port-in port-glow-pink"></div>
+        <div class="node-header" style="justify-content: center;">
+          <span>network.transmit</span>
+        </div>
+        <div class="node-body">
+          <h3 style="color: #fff; margin-bottom: 0.5rem;">System Ready</h3>
+          <p class="node-text" style="margin-bottom: 1.5rem;">Open to learning, collaboration, and interesting software projects.</p>
+          <a href="https://github.com/zedfar" target="_blank" class="btn-contact">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+            </svg>
+            Access GitHub
+          </a>
         </div>
       </div>
     </div>
 
-    <section id="builds">
-      <p class="section-label reveal">what i build</p>
-      <h2 class="section-title reveal">Practical things I create and improve</h2>
-      <p class="section-desc reveal">From ideas to prototypes, dashboards, and maintainable application features.</p>
-
-      <div class="builds-grid">
-        <article class="build-card reveal">
-          <span class="build-icon">🧩</span>
-          <h3 class="build-title">Web applications</h3>
-          <p class="build-desc">Frontend and backend features for practical apps, dashboards, and internal tools.</p>
-        </article>
-        <article class="build-card reveal">
-          <span class="build-icon">📱</span>
-          <h3 class="build-title">Mobile applications</h3>
-          <p class="build-desc">Cross-platform mobile interfaces and prototypes using React Native and Expo.</p>
-        </article>
-        <article class="build-card reveal">
-          <span class="build-icon">📊</span>
-          <h3 class="build-title">Data visualization</h3>
-          <p class="build-desc">Charts, dashboards, visual reports, and data-driven interfaces for better insight.</p>
-        </article>
-        <article class="build-card reveal">
-          <span class="build-icon">🔌</span>
-          <h3 class="build-title">API integration</h3>
-          <p class="build-desc">Backend prototyping, REST APIs, data processing, and integrations between systems.</p>
-        </article>
-        <article class="build-card reveal">
-          <span class="build-icon">🛠️</span>
-          <h3 class="build-title">Maintenance &amp; improvement</h3>
-          <p class="build-desc">Debugging, refactoring, usability improvements, and making systems easier to maintain.</p>
-        </article>
-        <article class="build-card reveal">
-          <span class="build-icon">🤖</span>
-          <h3 class="build-title">AI-assisted prototypes</h3>
-          <p class="build-desc">Experiments with LLM APIs and AI-assisted workflows for research and prototyping.</p>
-        </article>
-      </div>
-
-      <div class="exploring-box reveal">
-        <h3>🌱 Currently exploring</h3>
-        <p>Areas I’m learning and experimenting with through personal projects, modified forks, and prototypes.</p>
-        <div class="explore-pills">
-          <span class="explore-pill">LLM API Integration</span>
-          <span class="explore-pill">AI-assisted Workflows</span>
-          <span class="explore-pill">Real-time Dashboards</span>
-          <span class="explore-pill">Interactive Data Visualization</span>
-        </div>
-      </div>
-    </section>
-
-    <section id="contact">
-      <div class="contact-card reveal">
-        <p class="section-label" style="text-align:center">contact</p>
-        <h2 class="section-title" style="text-align:center">Let's connect</h2>
-        <p class="section-desc" style="margin:0 auto;text-align:center">
-          Open to learning, collaboration, and interesting software projects. You can find my personal experiments and prototypes on GitHub.
-        </p>
-        <div class="contact-links">
-          <a href="https://github.com/zedfar" class="contact-link" target="_blank" rel="noopener noreferrer" aria-label="GitHub profile">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
-            </svg>
-            GitHub
-          </a>
-          <a href="#hero" class="contact-link">Back to top ↑</a>
-        </div>
-      </div>
-    </section>
   </main>
 
-  <footer>
-    <p>// built by zedfar · updated 2026</p>
-  </footer>
-
   <script>
-    // Interactive constellation canvas background.
-    const canvas = document.getElementById('network-canvas');
+    const canvas = document.getElementById('schematic-canvas');
     const ctx = canvas.getContext('2d');
-    const mouse = { x: null, y: null, active: false };
-    let nodes = [];
     let DPR = Math.min(window.devicePixelRatio || 1, 2);
+    
+    // Mouse tracking for physics interaction
+    const mouse = { x: -1000, y: -1000 };
 
-    function resizeCanvas() {
+    // Define the neural connections between nodes
+    // Using CSS variable colors for consistency
+    const connectionMap = [
+      { from: 'port-hero-out', to: 'port-about-in', color: '#00e5ff', offset: 0.1 },
+      { from: 'port-hero-out', to: 'port-stack-in', color: '#b400ff', offset: 0.6 },
+      { from: 'port-about-out', to: 'port-builds-in-1', color: '#00e5ff', offset: 0.3 },
+      { from: 'port-stack-out', to: 'port-builds-in-2', color: '#b400ff', offset: 0.8 },
+      { from: 'port-builds-out', to: 'port-contact-in', color: '#ff0055', offset: 0.2 }
+    ];
+
+    // Ambient floating dust particles
+    let particles = [];
+
+    function initCanvas() {
       DPR = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.floor(window.innerWidth * DPR);
-      canvas.height = Math.floor(window.innerHeight * DPR);
+      canvas.width = window.innerWidth * DPR;
+      canvas.height = window.innerHeight * DPR;
       canvas.style.width = `${window.innerWidth}px`;
       canvas.style.height = `${window.innerHeight}px`;
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-      createNodes();
-    }
 
-    function createNodes() {
-      const area = window.innerWidth * window.innerHeight;
-      const count = Math.min(95, Math.max(38, Math.floor(area / 15500)));
-      nodes = Array.from({ length: count }, (_, i) => ({
+      // Create ambient particles
+      particles = Array.from({ length: 40 }, () => ({
         x: Math.random() * window.innerWidth,
         y: Math.random() * window.innerHeight,
-        vx: (Math.random() - 0.5) * 0.34,
-        vy: (Math.random() - 0.5) * 0.34,
-        r: Math.random() * 1.9 + 1,
-        hue: i % 3 === 0 ? 239 : i % 3 === 1 ? 199 : 262
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3 - 0.2, // Drift slowly upwards
+        size: Math.random() * 1.5 + 0.5,
+        opacity: Math.random() * 0.4 + 0.1
       }));
     }
 
-    function drawBackground() {
-      const gradient = ctx.createLinearGradient(0, 0, window.innerWidth, window.innerHeight);
-      gradient.addColorStop(0, 'rgba(248,250,252,0.94)');
-      gradient.addColorStop(0.5, 'rgba(238,242,255,0.9)');
-      gradient.addColorStop(1, 'rgba(240,249,255,0.92)');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
-    }
+    // Repel a coordinate point away from the mouse cursor
+    function repel(x, y, forceMultiplier = 80) {
+      const dx = mouse.x - x;
+      const dy = mouse.y - y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const maxDist = 180; // Radius of influence
 
-    function drawConnections() {
-      const maxDistance = window.innerWidth < 760 ? 105 : 145;
-      for (let i = 0; i < nodes.length; i++) {
-        for (let j = i + 1; j < nodes.length; j++) {
-          const dx = nodes[i].x - nodes[j].x;
-          const dy = nodes[i].y - nodes[j].y;
-          const dist = Math.hypot(dx, dy);
-          if (dist < maxDistance) {
-            const opacity = (1 - dist / maxDistance) * 0.28;
-            ctx.beginPath();
-            ctx.strokeStyle = `rgba(79, 70, 229, ${opacity})`;
-            ctx.lineWidth = 1;
-            ctx.moveTo(nodes[i].x, nodes[i].y);
-            ctx.lineTo(nodes[j].x, nodes[j].y);
-            ctx.stroke();
-          }
-        }
-
-        if (mouse.active && mouse.x !== null && mouse.y !== null) {
-          const dx = nodes[i].x - mouse.x;
-          const dy = nodes[i].y - mouse.y;
-          const dist = Math.hypot(dx, dy);
-          if (dist < 190) {
-            ctx.beginPath();
-            ctx.strokeStyle = `rgba(14, 165, 233, ${(1 - dist / 190) * 0.34})`;
-            ctx.lineWidth = 1;
-            ctx.moveTo(nodes[i].x, nodes[i].y);
-            ctx.lineTo(mouse.x, mouse.y);
-            ctx.stroke();
-          }
-        }
+      if (dist < maxDist) {
+        const force = (maxDist - dist) / maxDist;
+        // Ease out the force
+        const easeForce = Math.pow(force, 2); 
+        return {
+          x: x - (dx / dist) * easeForce * forceMultiplier,
+          y: y - (dy / dist) * easeForce * forceMultiplier
+        };
       }
+      return { x, y };
     }
 
-    function drawNodes() {
-      nodes.forEach((node) => {
-        node.x += node.vx;
-        node.y += node.vy;
+    // Get exact coordinate on a cubic bezier curve given time 't' (0 to 1)
+    function getBezierPoint(t, p0, p1, p2, p3) {
+      const cx = 3 * (p1.x - p0.x);
+      const bx = 3 * (p2.x - p1.x) - cx;
+      const ax = p3.x - p0.x - cx - bx;
 
-        if (node.x < -20) node.x = window.innerWidth + 20;
-        if (node.x > window.innerWidth + 20) node.x = -20;
-        if (node.y < -20) node.y = window.innerHeight + 20;
-        if (node.y > window.innerHeight + 20) node.y = -20;
+      const cy = 3 * (p1.y - p0.y);
+      const by = 3 * (p2.y - p1.y) - cy;
+      const ay = p3.y - p0.y - cy - by;
+
+      const x = (ax * Math.pow(t, 3)) + (bx * Math.pow(t, 2)) + (cx * t) + p0.x;
+      const y = (ay * Math.pow(t, 3)) + (by * Math.pow(t, 2)) + (cy * t) + p0.y;
+
+      return { x, y };
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 1. Draw Ambient Particles
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+
+        // Mouse repel for particles
+        let pos = repel(p.x, p.y, 30);
+
+        // Wrap around screen
+        if (p.x < 0) p.x = window.innerWidth;
+        if (p.x > window.innerWidth) p.x = 0;
+        if (p.y < 0) p.y = window.innerHeight;
+        if (p.y > window.innerHeight) p.y = 0;
 
         ctx.beginPath();
-        ctx.arc(node.x, node.y, node.r, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${node.hue}, 78%, 55%, 0.58)`;
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, node.r * 3.2, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${node.hue}, 78%, 55%, 0.055)`;
+        ctx.arc(pos.x, pos.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
         ctx.fill();
       });
-    }
 
-    function animate() {
-      drawBackground();
-      drawConnections();
-      drawNodes();
-      requestAnimationFrame(animate);
-    }
+      // Timer for data packets flowing through wires
+      const time = Date.now() / 2500; 
 
-    window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('mousemove', (event) => {
-      mouse.x = event.clientX;
-      mouse.y = event.clientY;
-      mouse.active = true;
-    });
-    window.addEventListener('mouseleave', () => {
-      mouse.active = false;
-      mouse.x = null;
-      mouse.y = null;
-    });
+      // 2. Draw Neural Connections (Wires)
+      connectionMap.forEach(conn => {
+        const el1 = document.getElementById(conn.from);
+        const el2 = document.getElementById(conn.to);
+        if (!el1 || !el2) return;
 
-    resizeCanvas();
-    animate();
+        // Get live position of DOM elements (handles scroll natively!)
+        const rect1 = el1.getBoundingClientRect();
+        const rect2 = el2.getBoundingClientRect();
 
-    // Scroll reveal.
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
+        // Calculate center points of the ports
+        const startX = rect1.left + rect1.width / 2;
+        const startY = rect1.top + rect1.height / 2;
+        const endX = rect2.left + rect2.width / 2;
+        const endY = rect2.top + rect2.height / 2;
+
+        // Calculate tension points for smooth S-curves
+        // The further apart vertically, the deeper the curve tension
+        const verticalTension = Math.max(80, Math.abs(endY - startY) * 0.5);
+        
+        // Base control points (straight down/up)
+        let baseCp1 = { x: startX, y: startY + verticalTension };
+        let baseCp2 = { x: endX, y: endY - verticalTension };
+
+        // Apply mouse repel physics to the control points to make wires bend!
+        const cp1 = repel(baseCp1.x, baseCp1.y, 100);
+        const cp2 = repel(baseCp2.x, baseCp2.y, 100);
+
+        // Draw the main wire
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, endX, endY);
+        
+        ctx.strokeStyle = conn.color;
+        ctx.lineWidth = 1.5;
+        
+        // Add glowing effect to wires
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = conn.color;
+        
+        // Make wires slightly transparent to blend with background
+        ctx.globalAlpha = 0.5;
+        ctx.stroke();
+        
+        // Reset alpha and shadow
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur = 0;
+
+        // 3. Draw flowing Data Packets on the wires
+        // We draw multiple packets per wire for a busy network feel
+        for(let i = 0; i < 3; i++) {
+          // Calculate normalized position (0 to 1) along the curve
+          let t = (time + conn.offset + (i * 0.33)) % 1;
+          
+          // Get exact x,y on the bezier curve
+          let packetPos = getBezierPoint(t, {x:startX, y:startY}, cp1, cp2, {x:endX, y:endY});
+
+          // Draw the glowing packet
+          ctx.beginPath();
+          ctx.arc(packetPos.x, packetPos.y, 2.5, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowBlur = 15;
+          ctx.shadowColor = conn.color;
+          ctx.fill();
         }
+        ctx.shadowBlur = 0; // Reset
       });
-    }, { threshold: 0.12 });
 
-    document.querySelectorAll('.reveal').forEach((element) => observer.observe(element));
+      requestAnimationFrame(draw);
+    }
+
+    window.addEventListener('resize', initCanvas);
+    
+    window.addEventListener('mousemove', (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+
+    // Handle touch screens smoothly
+    window.addEventListener('touchmove', (e) => {
+      if(e.touches.length > 0) {
+        mouse.x = e.touches[0].clientX;
+        mouse.y = e.touches[0].clientY;
+      }
+    }, {passive: true});
+
+    window.addEventListener('mouseleave', () => {
+      mouse.x = -1000;
+      mouse.y = -1000;
+    });
+    window.addEventListener('touchend', () => {
+      mouse.x = -1000;
+      mouse.y = -1000;
+    });
+
+    // Start everything once fonts and DOM are ready to ensure perfect alignment
+    window.onload = () => {
+      initCanvas();
+      draw();
+    };
+
   </script>
 </body>
 </html>
