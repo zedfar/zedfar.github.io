@@ -3,320 +3,77 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Zedfar — Software Engineer focused on web, mobile, data visualization, prototyping, and maintainable systems." />
-  <title>Zedfar · Neural Schematic</title>
-  
+
+  <!-- Primary SEO -->
+  <title>Zedfar · Software Engineer</title>
+  <meta name="description" content="Zedfar — Software Engineer building practical web, mobile, data visualization, and internal tool solutions focused on prototyping and maintainability." />
+  <meta name="keywords" content="software engineer, web developer, react, typescript, node.js, react native, data visualization, d3.js, python, docker, full stack" />
+  <meta name="author" content="Zedfar" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://zedfar.github.io/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type"         content="website" />
+  <meta property="og:url"          content="https://zedfar.github.io/" />
+  <meta property="og:site_name"    content="Zedfar" />
+  <meta property="og:title"        content="Zedfar · Software Engineer" />
+  <meta property="og:description"  content="Building practical web, mobile, data visualization, and internal tool solutions focused on prototyping and maintainability." />
+  <meta property="og:image"        content="https://zedfar.github.io/og-image.png" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt"    content="Zedfar — Software Engineer" />
+  <meta property="og:locale"       content="en_US" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="Zedfar · Software Engineer" />
+  <meta name="twitter:description" content="Building practical web, mobile, data visualization, and internal tool solutions focused on prototyping and maintainability." />
+  <meta name="twitter:image"       content="https://zedfar.github.io/og-image.png" />
+  <meta name="twitter:image:alt"   content="Zedfar — Software Engineer" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="alternate icon" href="/favicon.svg" />
+  <link rel="apple-touch-icon" href="/favicon.svg" />
+  <meta name="theme-color" content="#050508" />
+
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Zedfar",
+    "jobTitle": "Software Engineer",
+    "url": "https://zedfar.github.io/",
+    "sameAs": ["https://github.com/zedfar"],
+    "knowsAbout": ["React", "TypeScript", "Node.js", "React Native", "D3.js", "Python", "Docker", "Data Visualization", "AI Prototyping"]
+  }
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  
-  <style>
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    :root {
-      /* Dark Schematic Palette */
-      --bg: #050508;
-      --bg-grid: rgba(255, 255, 255, 0.03);
-      --node-bg: rgba(12, 12, 16, 0.6);
-      --node-border: rgba(255, 255, 255, 0.12);
-      --text-main: #f8fafc;
-      --text-muted: #8b949e;
-      --wire-cyan: #00e5ff;
-      --wire-purple: #b400ff;
-      --wire-pink: #ff0055;
-      --glow-spread: 15px;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background-color: var(--bg);
-      color: var(--text-main);
-      overflow-x: hidden;
-      /* Blueprint Grid Background */
-      background-image: 
-        linear-gradient(var(--bg-grid) 1px, transparent 1px),
-        linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
-      background-size: 40px 40px;
-      background-position: center center;
-    }
-
-    #schematic-canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 0;
-      pointer-events: none; /* Let clicks pass through to HTML */
-    }
-
-    /* Container for the Nodes */
-    .layout-container {
-      position: relative;
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12vh;
-      padding: 12vh 4vw 15vh;
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-
-    .row {
-      display: flex;
-      width: 100%;
-      justify-content: center;
-      gap: 5vw;
-    }
-
-    .row.split {
-      justify-content: space-between;
-      max-width: 1100px;
-    }
-
-    .node {
-      background: var(--node-bg);
-      border: 1px solid var(--node-border);
-      border-radius: 12px;
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-      position: relative;
-      width: 100%;
-      max-width: 480px;
-      transition: border-color 0.3s ease, transform 0.3s ease;
-    }
-
-    .node:hover {
-      border-color: rgba(255, 255, 255, 0.25);
-      transform: translateY(-2px);
-    }
-
-    .node.large {
-      max-width: 800px;
-    }
-
-    .node-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.6rem 1.2rem;
-      background: rgba(0, 0, 0, 0.5);
-      border-bottom: 1px solid var(--node-border);
-      border-radius: 12px 12px 0 0;
-      font-family: 'Fira Code', monospace;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      user-select: none;
-    }
-
-    .node-header .dots {
-      display: flex;
-      gap: 6px;
-    }
-
-    .node-header .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #333;
-    }
-
-    .dot.red { background: #ff5f56; }
-    .dot.yellow { background: #ffbd2e; }
-    .dot.green { background: #27c93f; }
-
-    .node-body {
-      padding: 1.8rem;
-    }
-
-    .port {
-      width: 14px;
-      height: 14px;
-      background: #111;
-      border: 2px solid #555;
-      border-radius: 50%;
-      position: absolute;
-      z-index: 20;
-      transition: all 0.3s ease;
-    }
-
-    .port-in { top: -7px; left: 50%; transform: translateX(-50%); }
-    .port-out { bottom: -7px; left: 50%; transform: translateX(-50%); }
-    
-    /* Specific positioning for multiple ports */
-    .port-in.left-port { left: 25%; }
-    .port-in.right-port { left: 75%; }
-
-    @keyframes pulseGlow {
-      0%, 100% { box-shadow: 0 0 8px var(--glow-color); }
-      50% { box-shadow: 0 0 18px var(--glow-color); }
-    }
-
-    .port-glow-cyan { --glow-color: rgba(0, 229, 255, 0.6); border-color: var(--wire-cyan); animation: pulseGlow 2.5s infinite; }
-    .port-glow-purple { --glow-color: rgba(180, 0, 255, 0.6); border-color: var(--wire-purple); animation: pulseGlow 2.5s infinite 0.5s; }
-    .port-glow-pink { --glow-color: rgba(255, 0, 85, 0.6); border-color: var(--wire-pink); animation: pulseGlow 2.5s infinite 1s; }
-
-    h1, h2, h3, .mono {
-      font-family: 'Fira Code', monospace;
-    }
-
-    .node-title {
-      font-size: 2.2rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 0.5rem;
-      letter-spacing: -0.02em;
-    }
-
-    .node-subtitle {
-      color: var(--wire-cyan);
-      font-size: 0.95rem;
-      font-weight: 500;
-      margin-bottom: 1.2rem;
-    }
-
-    .node-text {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      line-height: 1.6;
-    }
-
-    .node-text p {
-      margin-bottom: 1rem;
-    }
-
-    .node-text strong {
-      color: var(--text-main);
-      font-weight: 500;
-    }
-
-    /* Tech Stack Pills */
-    .tech-category {
-      margin-bottom: 1.5rem;
-    }
-    
-    .tech-category:last-child {
-      margin-bottom: 0;
-    }
-
-    .tech-label {
-      font-family: 'Fira Code', monospace;
-      font-size: 0.75rem;
-      color: var(--wire-purple);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 0.6rem;
-      display: block;
-    }
-
-    .pill-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-
-    .pill {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 0.3rem 0.8rem;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      font-family: 'Fira Code', monospace;
-      color: #cbd5e1;
-      transition: all 0.2s ease;
-    }
-
-    .pill:hover {
-      background: rgba(180, 0, 255, 0.15);
-      border-color: var(--wire-purple);
-      color: #fff;
-    }
-
-    /* Builds Grid */
-    .builds-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-    }
-
-    .build-card {
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      padding: 1rem;
-      border-radius: 8px;
-    }
-
-    .build-card h4 {
-      color: #fff;
-      font-size: 0.9rem;
-      margin-bottom: 0.4rem;
-    }
-
-    .build-card p {
-      color: var(--text-muted);
-      font-size: 0.8rem;
-      line-height: 1.5;
-    }
-
-    /* Contact Links */
-    .btn-contact {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.6rem;
-      background: transparent;
-      border: 1px solid var(--wire-pink);
-      color: var(--text-main);
-      padding: 0.8rem 1.5rem;
-      border-radius: 8px;
-      font-family: 'Fira Code', monospace;
-      font-size: 0.85rem;
-      text-decoration: none;
-      transition: all 0.3s ease;
-      cursor: pointer;
-    }
-
-    .btn-contact:hover {
-      background: rgba(255, 0, 85, 0.1);
-      box-shadow: 0 0 20px rgba(255, 0, 85, 0.3);
-    }
-
-    /* Responsiveness */
-    @media (max-width: 900px) {
-      .row.split {
-        flex-direction: column;
-        align-items: center;
-        gap: 10vh;
-      }
-      .node { max-width: 100%; }
-      /* Adjust dual ports on mobile to be central if they stack */
-      .port-in.left-port, .port-in.right-port { left: 50%; }
-      .port-in.left-port { top: -7px; }
-      .port-in.right-port { top: -7px; } 
-    }
-  </style>
 </head>
 <body>
 
-  <!-- Background Canvas for Neural Wires -->
+  <div id="scroll-progress" aria-hidden="true"></div>
   <canvas id="schematic-canvas"></canvas>
 
   <main class="layout-container">
-    
+
     <div class="row single">
       <div class="node" id="node-hero">
         <div class="node-header">
           <div class="dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
           <span>sys.init_profile()</span>
+          <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true">
+            <rect width="20" height="20" rx="4" fill="rgba(0,229,255,0.08)" stroke="rgba(0,229,255,0.25)" stroke-width="1"/>
+            <path d="M4.5 6 H15.5 L5.5 14 H15.5" stroke="#00e5ff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <circle cx="4.5"  cy="6"  r="1.2" fill="#b400ff"/>
+            <circle cx="15.5" cy="6"  r="1.2" fill="#00e5ff"/>
+            <circle cx="5.5"  cy="14" r="1.2" fill="#00e5ff"/>
+            <circle cx="15.5" cy="14" r="1.2" fill="#b400ff"/>
+          </svg>
         </div>
         <div class="node-body">
           <h1 class="node-title">Zedfar</h1>
@@ -325,13 +82,11 @@
             <p>I build practical web, mobile, dashboard, and internal tool solutions, focusing on prototyping, maintainability, and turning ideas into working software.</p>
           </div>
         </div>
-        <!-- Output Port branching to About and Stack -->
         <div id="port-hero-out" class="port port-out port-glow-cyan"></div>
       </div>
     </div>
 
     <div class="row split">
-      <!-- ABOUT NODE -->
       <div class="node" id="node-about">
         <div id="port-about-in" class="port port-in port-glow-cyan"></div>
         <div class="node-header">
@@ -339,11 +94,11 @@
           <span>module.logic_core</span>
         </div>
         <div class="node-body">
-          <h3 class="mono" style="color: #fff; margin-bottom: 1rem; font-size: 1.1rem;">// About Architecture</h3>
+          <h3 class="mono" style="color:#fff;margin-bottom:1rem;font-size:1.1rem;">// About Architecture</h3>
           <div class="node-text">
             <p>Working across <strong>frontend, backend, mobile, and data visualization</strong> to create seamless digital experiences.</p>
             <p>I enjoy transforming complex problems into intuitive products, exploring technical solutions through R&D, and refining applications for scale.</p>
-            <p style="padding-left: 10px; border-left: 2px solid var(--wire-cyan); margin-top: 1.5rem; font-size: 0.85rem;">
+            <p style="padding-left:10px;border-left:2px solid var(--wire-cyan);margin-top:1.5rem;font-size:0.85rem;">
               Currently integrating <strong>AI-assisted workflows</strong> to push the boundaries of rapid prototyping and robust system documentation.
             </p>
           </div>
@@ -351,7 +106,6 @@
         <div id="port-about-out" class="port port-out port-glow-cyan"></div>
       </div>
 
-      <!-- STACK NODE -->
       <div class="node" id="node-stack">
         <div id="port-stack-in" class="port port-in port-glow-purple"></div>
         <div class="node-header">
@@ -388,31 +142,61 @@
 
     <div class="row single">
       <div class="node large" id="node-builds">
-        <!-- Dual input ports to receive from About and Stack -->
         <div id="port-builds-in-1" class="port port-in left-port port-glow-cyan"></div>
         <div id="port-builds-in-2" class="port port-in right-port port-glow-purple"></div>
-        
         <div class="node-header">
           <div class="dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
           <span>render.outputs()</span>
         </div>
         <div class="node-body">
-          <h3 class="mono" style="color: #fff; margin-bottom: 1.5rem; font-size: 1.1rem;">// Executable Modules</h3>
+          <h3 class="mono" style="color:#fff;margin-bottom:1.5rem;font-size:1.1rem;">// Executable Modules</h3>
           <div class="builds-grid">
             <div class="build-card">
-              <h4>🌐 Web Applications</h4>
+              <div class="build-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+                  <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 8h20"/>
+                  <circle cx="6" cy="6" r="0.8" fill="#00e5ff" stroke="none"/>
+                  <circle cx="9" cy="6" r="0.8" fill="#00e5ff" stroke="none"/>
+                  <circle cx="12" cy="6" r="0.8" fill="#00e5ff" stroke="none"/>
+                </svg>
+              </div>
+              <h4>Web Applications</h4>
               <p>Performant SPAs, interactive dashboards, and comprehensive internal management tools.</p>
             </div>
             <div class="build-card">
-              <h4>📱 Mobile Experiences</h4>
+              <div class="build-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#b400ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+                  <rect x="6" y="2" width="12" height="20" rx="2"/>
+                  <path d="M10 18h4"/><line x1="9" y1="6" x2="15" y2="6"/>
+                </svg>
+              </div>
+              <h4>Mobile Experiences</h4>
               <p>Seamless cross-platform interfaces using React Native and Expo.</p>
             </div>
             <div class="build-card">
-              <h4>📊 Data Visualization</h4>
+              <div class="build-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+                  <path d="M3 20h18"/><path d="M5 20V14l4-4 4 3 4-7 3 3"/>
+                  <circle cx="5"  cy="14" r="1.5" fill="#00e5ff" stroke="none"/>
+                  <circle cx="9"  cy="10" r="1.5" fill="#00e5ff" stroke="none"/>
+                  <circle cx="13" cy="13" r="1.5" fill="#00e5ff" stroke="none"/>
+                  <circle cx="17" cy="6"  r="1.5" fill="#00e5ff" stroke="none"/>
+                  <circle cx="20" cy="9"  r="1.5" fill="#00e5ff" stroke="none"/>
+                </svg>
+              </div>
+              <h4>Data Visualization</h4>
               <p>Custom charts, reports, and network graphs that turn raw data into insights.</p>
             </div>
             <div class="build-card">
-              <h4>🤖 AI Prototyping</h4>
+              <div class="build-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#ff0055" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+                  <rect x="7" y="7" width="10" height="10" rx="1"/>
+                  <path d="M9 7V4M12 7V4M15 7V4M9 20v-3M12 20v-3M15 20v-3M4 9h3M4 12h3M4 15h3M17 9h3M17 12h3M17 15h3"/>
+                  <circle cx="10" cy="10" r="1" fill="#ff0055" stroke="none"/>
+                  <circle cx="14" cy="14" r="1" fill="#ff0055" stroke="none"/>
+                </svg>
+              </div>
+              <h4>AI Prototyping</h4>
               <p>Integrating LLMs for smart search, automated workflows, and research analysis.</p>
             </div>
           </div>
@@ -422,17 +206,17 @@
     </div>
 
     <div class="row single">
-      <div class="node" id="node-contact" style="text-align: center;">
+      <div class="node" id="node-contact" style="text-align:center;">
         <div id="port-contact-in" class="port port-in port-glow-pink"></div>
-        <div class="node-header" style="justify-content: center;">
+        <div class="node-header" style="justify-content:center;">
           <span>network.transmit</span>
         </div>
         <div class="node-body">
-          <h3 style="color: #fff; margin-bottom: 0.5rem;">System Ready</h3>
-          <p class="node-text" style="margin-bottom: 1.5rem;">Open to learning, collaboration, and interesting software projects.</p>
-          <a href="https://github.com/zedfar" target="_blank" class="btn-contact">
+          <h3 style="color:#fff;margin-bottom:0.5rem;">System Ready</h3>
+          <p class="node-text" style="margin-bottom:1.5rem;">Open to learning, collaboration, and interesting software projects.</p>
+          <a href="https://github.com/zedfar" target="_blank" rel="noopener noreferrer" class="btn-contact">
             <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
             </svg>
             Access GitHub
           </a>
@@ -442,208 +226,6 @@
 
   </main>
 
-  <script>
-    const canvas = document.getElementById('schematic-canvas');
-    const ctx = canvas.getContext('2d');
-    let DPR = Math.min(window.devicePixelRatio || 1, 2);
-    
-    // Mouse tracking for physics interaction
-    const mouse = { x: -1000, y: -1000 };
-
-    // Define the neural connections between nodes
-    // Using CSS variable colors for consistency
-    const connectionMap = [
-      { from: 'port-hero-out', to: 'port-about-in', color: '#00e5ff', offset: 0.1 },
-      { from: 'port-hero-out', to: 'port-stack-in', color: '#b400ff', offset: 0.6 },
-      { from: 'port-about-out', to: 'port-builds-in-1', color: '#00e5ff', offset: 0.3 },
-      { from: 'port-stack-out', to: 'port-builds-in-2', color: '#b400ff', offset: 0.8 },
-      { from: 'port-builds-out', to: 'port-contact-in', color: '#ff0055', offset: 0.2 }
-    ];
-
-    // Ambient floating dust particles
-    let particles = [];
-
-    function initCanvas() {
-      DPR = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = window.innerWidth * DPR;
-      canvas.height = window.innerHeight * DPR;
-      canvas.style.width = `${window.innerWidth}px`;
-      canvas.style.height = `${window.innerHeight}px`;
-      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-
-      // Create ambient particles
-      particles = Array.from({ length: 40 }, () => ({
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * window.innerHeight,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3 - 0.2, // Drift slowly upwards
-        size: Math.random() * 1.5 + 0.5,
-        opacity: Math.random() * 0.4 + 0.1
-      }));
-    }
-
-    // Repel a coordinate point away from the mouse cursor
-    function repel(x, y, forceMultiplier = 80) {
-      const dx = mouse.x - x;
-      const dy = mouse.y - y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const maxDist = 180; // Radius of influence
-
-      if (dist < maxDist) {
-        const force = (maxDist - dist) / maxDist;
-        // Ease out the force
-        const easeForce = Math.pow(force, 2); 
-        return {
-          x: x - (dx / dist) * easeForce * forceMultiplier,
-          y: y - (dy / dist) * easeForce * forceMultiplier
-        };
-      }
-      return { x, y };
-    }
-
-    // Get exact coordinate on a cubic bezier curve given time 't' (0 to 1)
-    function getBezierPoint(t, p0, p1, p2, p3) {
-      const cx = 3 * (p1.x - p0.x);
-      const bx = 3 * (p2.x - p1.x) - cx;
-      const ax = p3.x - p0.x - cx - bx;
-
-      const cy = 3 * (p1.y - p0.y);
-      const by = 3 * (p2.y - p1.y) - cy;
-      const ay = p3.y - p0.y - cy - by;
-
-      const x = (ax * Math.pow(t, 3)) + (bx * Math.pow(t, 2)) + (cx * t) + p0.x;
-      const y = (ay * Math.pow(t, 3)) + (by * Math.pow(t, 2)) + (cy * t) + p0.y;
-
-      return { x, y };
-    }
-
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // 1. Draw Ambient Particles
-      particles.forEach(p => {
-        p.x += p.vx;
-        p.y += p.vy;
-
-        // Mouse repel for particles
-        let pos = repel(p.x, p.y, 30);
-
-        // Wrap around screen
-        if (p.x < 0) p.x = window.innerWidth;
-        if (p.x > window.innerWidth) p.x = 0;
-        if (p.y < 0) p.y = window.innerHeight;
-        if (p.y > window.innerHeight) p.y = 0;
-
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
-        ctx.fill();
-      });
-
-      // Timer for data packets flowing through wires
-      const time = Date.now() / 2500; 
-
-      // 2. Draw Neural Connections (Wires)
-      connectionMap.forEach(conn => {
-        const el1 = document.getElementById(conn.from);
-        const el2 = document.getElementById(conn.to);
-        if (!el1 || !el2) return;
-
-        // Get live position of DOM elements (handles scroll natively!)
-        const rect1 = el1.getBoundingClientRect();
-        const rect2 = el2.getBoundingClientRect();
-
-        // Calculate center points of the ports
-        const startX = rect1.left + rect1.width / 2;
-        const startY = rect1.top + rect1.height / 2;
-        const endX = rect2.left + rect2.width / 2;
-        const endY = rect2.top + rect2.height / 2;
-
-        // Calculate tension points for smooth S-curves
-        // The further apart vertically, the deeper the curve tension
-        const verticalTension = Math.max(80, Math.abs(endY - startY) * 0.5);
-        
-        // Base control points (straight down/up)
-        let baseCp1 = { x: startX, y: startY + verticalTension };
-        let baseCp2 = { x: endX, y: endY - verticalTension };
-
-        // Apply mouse repel physics to the control points to make wires bend!
-        const cp1 = repel(baseCp1.x, baseCp1.y, 100);
-        const cp2 = repel(baseCp2.x, baseCp2.y, 100);
-
-        // Draw the main wire
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
-        ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, endX, endY);
-        
-        ctx.strokeStyle = conn.color;
-        ctx.lineWidth = 1.5;
-        
-        // Add glowing effect to wires
-        ctx.shadowBlur = 12;
-        ctx.shadowColor = conn.color;
-        
-        // Make wires slightly transparent to blend with background
-        ctx.globalAlpha = 0.5;
-        ctx.stroke();
-        
-        // Reset alpha and shadow
-        ctx.globalAlpha = 1;
-        ctx.shadowBlur = 0;
-
-        // 3. Draw flowing Data Packets on the wires
-        // We draw multiple packets per wire for a busy network feel
-        for(let i = 0; i < 3; i++) {
-          // Calculate normalized position (0 to 1) along the curve
-          let t = (time + conn.offset + (i * 0.33)) % 1;
-          
-          // Get exact x,y on the bezier curve
-          let packetPos = getBezierPoint(t, {x:startX, y:startY}, cp1, cp2, {x:endX, y:endY});
-
-          // Draw the glowing packet
-          ctx.beginPath();
-          ctx.arc(packetPos.x, packetPos.y, 2.5, 0, Math.PI * 2);
-          ctx.fillStyle = '#ffffff';
-          ctx.shadowBlur = 15;
-          ctx.shadowColor = conn.color;
-          ctx.fill();
-        }
-        ctx.shadowBlur = 0; // Reset
-      });
-
-      requestAnimationFrame(draw);
-    }
-
-    window.addEventListener('resize', initCanvas);
-    
-    window.addEventListener('mousemove', (e) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-    });
-
-    // Handle touch screens smoothly
-    window.addEventListener('touchmove', (e) => {
-      if(e.touches.length > 0) {
-        mouse.x = e.touches[0].clientX;
-        mouse.y = e.touches[0].clientY;
-      }
-    }, {passive: true});
-
-    window.addEventListener('mouseleave', () => {
-      mouse.x = -1000;
-      mouse.y = -1000;
-    });
-    window.addEventListener('touchend', () => {
-      mouse.x = -1000;
-      mouse.y = -1000;
-    });
-
-    // Start everything once fonts and DOM are ready to ensure perfect alignment
-    window.onload = () => {
-      initCanvas();
-      draw();
-    };
-
-  </script>
+  <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

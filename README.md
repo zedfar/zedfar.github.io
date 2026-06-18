@@ -1,54 +1,58 @@
 # zedfar.github.io
 
-Personal portfolio website for [zedfar.github.io](https://zedfar.github.io) — built with plain HTML, CSS, and vanilla JavaScript. No frameworks, no build tools, just clean code.
+Personal portfolio website — [zedfar.github.io](https://zedfar.github.io)
 
-## ✨ Features
+Built with **Vite + TypeScript**. Deployed automatically to GitHub Pages via GitHub Actions.
 
-- **Animated network canvas** — live node/edge visualization in the hero (vanilla Canvas API)
-- **Scroll reveal animations** — sections fade in using IntersectionObserver
-- **Fully responsive** — mobile-friendly layout
-- **Light mode** — clean, modern design with purple accent
-- **Zero dependencies** — no npm, no bundler, just one HTML file
+## Features
 
-## 🗂 Sections
+- Neural schematic canvas — animated bezier wires with flowing data packets and mouse repel physics
+- Scroll reveal animations — nodes fade + slide in via IntersectionObserver
+- Custom scrollbar + scroll progress bar
+- SVG favicon and OG image (1200×630)
+- SEO, Open Graph, Twitter Card, and JSON-LD structured data
+- Fully responsive
 
-| Section | Content |
-|---|---|
-| Hero | Name, tagline, CTA buttons, network animation |
-| About | Bio, stats cards |
-| Tech Stack | Frontend · Backend · Mobile · AI/ML · Data Viz |
-| What I Build | Project type cards with hover effects |
-| Currently Exploring | Agentic AI · Real-time Viz · Microservices |
-| Contact | GitHub link |
+## Stack
 
-## 🛠 Tech Used
-
-- HTML5 + CSS3 (custom properties, grid, flexbox)
-- Canvas API (network animation)
-- IntersectionObserver API (scroll reveal)
+- Vite + TypeScript (no framework)
+- Canvas API — neural wire animation
 - Google Fonts — Inter + Fira Code
 
-## 🚀 Deploy
-
-This site is hosted via **GitHub Pages** directly from the `main` branch.
-
-```bash
-git clone https://github.com/zedfar/zedfar.github.io.git
-cd zedfar.github.io
-
-# open locally
-open index.html
-```
-
-Push to `main` and GitHub Pages will publish automatically.
-
-## 📁 Structure
+## Structure
 
 ```
 zedfar.github.io/
-└── index.html    # entire site — HTML + CSS + JS in one file
+├── .github/workflows/deploy.yml   # CI/CD → GitHub Pages
+├── src/
+│   ├── main.ts                    # entry point
+│   ├── canvas.ts                  # neural wire animation
+│   ├── scroll.ts                  # scroll progress + reveal
+│   └── style.css
+├── public/
+│   ├── favicon.svg
+│   ├── og-image.svg
+│   └── og-image.png
+├── index.html
+├── vite.config.ts
+└── tsconfig.json
 ```
+
+## Development
+
+```bash
+npm install
+npm run dev       # dev server at localhost:5173
+npm run build     # type check + production build → dist/
+npm run gen-og    # regenerate og-image.png from og-image.svg (requires Chromium)
+```
+
+## Deploy
+
+Push to `main` → GitHub Actions runs `tsc && vite build` → deploys `dist/` to GitHub Pages.
+
+> Go to **Settings → Pages → Source** and set to **GitHub Actions** on first setup.
 
 ---
 
-> Built with ♥ by [zedfar](https://github.com/zedfar)
+> [zedfar](https://github.com/zedfar)
