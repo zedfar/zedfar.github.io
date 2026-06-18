@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="zg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#00e5ff"/>
+      <stop offset="100%" stop-color="#b400ff"/>
+    </linearGradient>
+    <!-- Glow for the Z trace -->
+    <filter id="gl" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- Softer glow for the pads -->
+    <filter id="gs" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="0.9" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="32" height="32" rx="7" fill="#050508"/>
+  <!-- Subtle cyan inner border -->
+  <rect x="0.75" y="0.75" width="30.5" height="30.5" rx="6.5"
+        fill="none" stroke="rgba(0,229,255,0.14)" stroke-width="1"/>
+
+  <!-- Z circuit trace — symmetric: top-left=(6,8) top-right=(26,8) bottom-left=(6,24) bottom-right=(26,24) -->
+  <path d="M6,8 H26 L6,24 H26"
+        stroke="url(#zg)" stroke-width="2.2"
+        stroke-linecap="round" stroke-linejoin="round"
+        fill="none" filter="url(#gl)"/>
+
+  <!-- Circuit pads at each corner — alternating cyan / purple -->
+  <circle cx="6"  cy="8"  r="2.2" fill="#b400ff" filter="url(#gs)"/>
+  <circle cx="26" cy="8"  r="2.2" fill="#00e5ff" filter="url(#gs)"/>
+  <circle cx="6"  cy="24" r="2.2" fill="#00e5ff" filter="url(#gs)"/>
+  <circle cx="26" cy="24" r="2.2" fill="#b400ff" filter="url(#gs)"/>
+</svg>
